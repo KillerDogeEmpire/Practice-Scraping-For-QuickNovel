@@ -14,33 +14,7 @@ class Apis {
     companion object {
         val apis: Array<MainAPI> = arrayOf(
             //AllProvider(),
-            NovelPassionProvider(),
-            BestLightNovelProvider(),
-            WuxiaWorldOnlineProvider(),
-            RoyalRoadProvider(),
-            FreewebnovelProvider(),
-            AzynovelProvider(),
-            ReadfromnetProvider(),
-            AllNovelProvider(),
-            RanobesProvider(),
-            NovelFullProvider(),
-
-
-            // chapter captcha
-//            WuxiaWorldSiteProvider(),
-            ReadLightNovelProvider(),
-            BoxNovelProvider(),
-            ComrademaoProvider(),
-            LightNovelPubProvider(),
-            ReadNovelFullProvider(),
-            ScribblehubProvider(),
-            KolNovelProvider(),
-            RewayatArProvider(),
-            ReadAnyBookProvider(),
-            MeioNovelProvider(),
-            MoreNovelProvider(),
-            IndoWebNovelProvider(),
-            SakuraNovelProvider(),
+             ReadNovelFullProvider(),
         )
 
         fun getApiFromName(name: String): APIRepository {
