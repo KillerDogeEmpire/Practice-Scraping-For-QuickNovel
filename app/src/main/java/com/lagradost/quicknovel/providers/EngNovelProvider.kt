@@ -61,7 +61,8 @@ class EngNovelProvider : MainAPI() {
         tag: String?
     ): HeadMainPageResponse {
         val url =
-            if (tag.isNullOrBlank()) "$mainUrl/latest-novels/tag/$page.html" else "$mainUrl/genre/$tag/$page.html"
+            if (tag.isNullOrBlank()) "$mainUrl/latest-novels/page=$page" else "$mainUrl/genres/$tag/page=$page"
+
         val response = app.get(url)
 
         val document = Jsoup.parse(response.text)
