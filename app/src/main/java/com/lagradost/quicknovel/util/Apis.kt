@@ -14,7 +14,7 @@ class Apis {
     companion object {
         val apis: Array<MainAPI> = arrayOf(
             //AllProvider(),
-         NovelsOnlineProvider(),
+        ReadWebNovelsProvider(),
         )
 
         fun getApiFromName(name: String): APIRepository {
