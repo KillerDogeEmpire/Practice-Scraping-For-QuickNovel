@@ -61,7 +61,7 @@ class EngNovelProvider : MainAPI() {
         tag: String?
     ): HeadMainPageResponse {
         val url =
-            if (tag.isNullOrBlank()) "$mainUrl/latest-novels/page=$page" else "$mainUrl/genres/$tag/page=$page"
+            if (tag.isNullOrBlank()) "$mainUrl/latest-novels/page/$page" else "$mainUrl/genres/$tag/page/$page"
 
         val response = app.get(url)
 
