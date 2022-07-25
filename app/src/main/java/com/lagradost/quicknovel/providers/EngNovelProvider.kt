@@ -9,49 +9,51 @@ class EngNovelProvider : MainAPI() {
     override val mainUrl = "https://engnovel.com"
     override val hasMainPage = true
 
-    override val iconId = R.drawable.icon_engnovel
+    override val iconId = R.drawable.icon_freewebnovel
 
     override val iconBackgroundId = R.color.wuxiaWorldOnlineColor
 
     override val tags = listOf(
         Pair("All", ""),
-        Pair("Action", "Action"),
-        Pair("Adult", "Adult"),
-        Pair("AdventCure", "AdventCure"),
-        Pair("Comedy", "Comedy"),
-        Pair("Drama", "Drama"),
-        Pair("Ecchi", "Ecchi"),
-        Pair("Fantasy", "Fantasy"),
-        //Pair("Editor's choice", "Editor's choice"),
-        Pair("Gender Bender", "Gender+Bender"),
-        Pair("Harem", "Harem"),
-        Pair("Historical", "Historical"),
-        Pair("Horror", "Horror"),
-        Pair("Josei", "Josei"),
-        Pair("Game", "Game"),
-        Pair("Martial Arts", "Martial+Art"),
-        Pair("Mature", "Mature"),
-        Pair("Mecha", "Mecha"),
-        Pair("Mystery", "Mystery"),
-        Pair("Psychological", "Psychological"),
-        Pair("Romance", "Romance"),
-        Pair("School Life", "School+Life"),
-        Pair("Sci-fi", "Sci-fi"),
-        Pair("Seinen", "Seinen"),
-        Pair("Shoujo", "Shoujo"),
-        Pair("Shounen Ai", "Shounen+Ai"),
-        Pair("Shounen", "Shounen"),
-        Pair("Slice of Life", "Slice+of+Life"),
-        Pair("Smut", "Smut"),
-        Pair("Sports", "Sports"),
-        Pair("Supernatural", "Supernatural"),
-        Pair("Tragedy", "Tragedy"),
-        Pair("Wuxia", "Wuxia"),
-        Pair("Xianxia", "Xianxia"),
-        Pair("Xuanhuan", "Xuanhuan"),
-        Pair("Yaoi", "Yaoi"),
-        Pair("Eastern", "Eastern"),
-        Pair("Reincarnation", "Reincarnation"),
+        Pair("Action","action-novels"),
+        Pair("Adult","adult-novels"),
+        Pair("Adventure","adventure-novels"),
+        Pair("Comedy","comedy-novels"),
+        Pair("Drama","drama-novels"),
+        Pair("Eastern","eastern-novels"),
+        Pair("Ecchi","ecchi-novels"),
+        Pair("Fantasy","fantasy-novels"),
+        Pair("Game","game-novels"),
+        Pair("Gender Bender","gender-bender-novels"),
+        Pair("Harem","harem-novels"),
+        Pair("Historical","historical-novels"),
+        Pair("Horror","horror-novels"),
+        Pair("Josei","josei-novels"),
+        Pair("Lolicon","lolicon-novels"),
+        Pair("Martial Arts","martial-arts-novels"),
+        Pair("Mature","mature-novels"),
+        Pair("Mecha","mecha-novels"),
+        Pair("Modern Life","modern-life-novels"),
+        Pair("Mystery","mystery-novels"),
+        Pair("Psychological","psychological-novels"),
+        Pair("Reincarnation","reincarnation-novels"),
+        Pair("Romance","romance-novels"),
+        Pair("School Life","school-life-novels"),
+        Pair("Sci-fi","sci-fi-novels"),
+        Pair("Seinen","seinen-novels"),
+        Pair("Shoujo","shoujo-novels"),
+        Pair("Shounen Ai","shounen-ai-novels"),
+        Pair("Shounen","shounen-novels"),
+        Pair("Slice of Life","slice-of-life-novels"),
+        Pair("Smut","smut-novels"),
+        Pair("Sports","sports-novels"),
+        Pair("Supernatural","supernatural-novels"),
+        Pair("Tragedy","tragedy-novels"),
+        Pair("Wuxia","wuxia-novels"),
+        Pair("Xianxia","xianxia-novels"),
+        Pair("Xuanhuan","xuanhuan-novels"),
+        Pair("Yaoi","yaoi-novels"),
+        Pair("Yuri","yuri-novels")
     )
 
     override suspend fun loadMainPage(
@@ -61,30 +63,26 @@ class EngNovelProvider : MainAPI() {
         tag: String?
     ): HeadMainPageResponse {
         val url =
-            if (tag.isNullOrBlank()) "$mainUrl/latest-novels/page/$page" else "$mainUrl/genres/$tag/page/$page"
-
+            if (tag.isNullOrBlank()) "$mainUrl/latest-novels/page/$page" else "$mainUrl/$tag/page/$page"
         val response = app.get(url)
 
         val document = Jsoup.parse(response.text)
 
-        val headers = document.select("div.ul-list1.ul-list1-2.ss-custom > div.li-row")
+        val headers = document.select("div.home-truyendecu")
         if (headers.size <= 0) return HeadMainPageResponse(url, ArrayList())
         val returnValue: ArrayList<SearchResponse> = ArrayList()
         for (h in headers) {
-            val h3 = h?.selectFirst("h3.tit > a")
-            val cUrl =  fixUrl(h3?.attr("href") ?: continue)
 
-            val name = h3.attr("title")
-            val posterUrl = h.selectFirst("div.pic > a > img")?.attr("src")
-
-            val latestChap = h.select("div.item")[2].selectFirst("> div > a")?.text()
+            val name = h.selectFirst("a")!!.attr("title")
+            val posterUrl = h.selectFirst("img")?.attr("src")
+            val cUrl = h.selectFirst("a")!!.attr("href")
             returnValue.add(
                 SearchResponse(
                     name,
                     cUrl,
                     fixUrlNull(posterUrl),
                     null,
-                    latestChap,
+                    null,
                     this.name
                 )
             )
@@ -95,43 +93,29 @@ class EngNovelProvider : MainAPI() {
     override suspend fun loadHtml(url: String): String? {
         val response = app.get(url)
         val document = Jsoup.parse(response.text)
-        return document.selectFirst("div.txt")?.html()
+        return document.selectFirst("div.chapter-content")?.html()
     }
 
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val response = app.post(
-            "$mainUrl/search/",
-            headers = mapOf(
-                "referer" to mainUrl,
-                "x-requested-with" to "XMLHttpRequest",
-                "content-type" to "application/x-www-form-urlencoded",
-                "accept" to "*/*",
-                "user-agent" to USER_AGENT
-            ),
-            data = mapOf("searchkey" to query)
-        )
-        val document = Jsoup.parse(response.text)
+        val document = app.get("$mainUrl/?s=$query").document
 
 
-        val headers = document.select("div.li-row")
+        val headers = document.select("div.home-truyendecu")
         if (headers.size <= 0) return ArrayList()
         val returnValue: ArrayList<SearchResponse> = ArrayList()
         for (h in headers) {
-            val h3 = h?.selectFirst("h3.tit > a")
-            val cUrl = fixUrl(h3?.attr("href") ?: continue)
 
-            val name = h3.attr("title") ?: continue
-            val posterUrl = h.selectFirst("div.pic > a > img")?.attr("src")
-
-            val latestChap = h.select("div.item")[2].selectFirst("> div > a")?.text()
+            val name = h.selectFirst("a")!!.attr("title")
+            val posterUrl = h.selectFirst("img")?.attr("src")
+            val cUrl = h.selectFirst("a")!!.attr("href")
             returnValue.add(
                 SearchResponse(
                     name,
                     cUrl,
                     fixUrlNull(posterUrl),
                     null,
-                    latestChap,
+                    null,
                     this.name
                 )
             )
@@ -143,36 +127,30 @@ class EngNovelProvider : MainAPI() {
         val response = app.get(url)
 
         val document = Jsoup.parse(response.text)
-        val name = document.selectFirst("h1.tit")?.text() ?: return null
+        val name = document.selectFirst("h3.title")?.text() ?: return null
 
-        val author =
-            document.selectFirst("span.glyphicon.glyphicon-user")?.nextElementSibling()?.text()
-        val tags =
-            document.selectFirst("span.glyphicon.glyphicon-th-list")?.nextElementSiblings()?.get(0)
-                ?.text()
-                ?.splitToSequence(", ")?.toList()
+        val infos = document.selectFirst("div.info")
+        val author = infos?.getElementsByAttributeValue("itemprop", "author")?.joinToString(", ") { it.text() }
+        val tags = infos?.getElementsByAttributeValue("itemprop","genre")?.map { it.text() }
 
-        val posterUrl = document.select(" div.pic > img").attr("src")
-        val synopsis = document.selectFirst("div.inner")?.text()
+        val posterUrl = document.select("div.book > img").attr("src")
+        val synopsis = document.selectFirst("div.desc-text")?.text()
 
         val data: ArrayList<ChapterData> = ArrayList()
-        val chapternumber0 = document.select("div.m-newest1 > ul.ul-list5 > li")[1]
-        val chapternumber1 = chapternumber0.selectFirst("a")?.attr("href")
-        val aid = "[0-9]+s.jpg".toRegex().find(response.text)?.value?.substringBefore("s")
-        val acode = "(?<=r_url\" content=\"https://freewebnovel.com/)(.*)(?=/chapter)".toRegex()
-            .find(response.text)?.value
+        val chapid= document.selectFirst("input#id_post")?.attr("value")
         val chaptersDataphp = app.post(
-            "$mainUrl/api/chapterlist.php",
+            "$mainUrl/wp-admin/admin-ajax.php",
             data = mapOf(
-                "acode" to acode!!,
-                "aid" to aid!!
+                "action" to "tw_ajax",
+                "type" to "list_chap",
+                "id" to chapid!!
             )
         )
-        val parsed = Jsoup.parse(chaptersDataphp.text.replace("""\""", "")).select("option")
+        val parsed = Jsoup.parse(chaptersDataphp.text).select("option")
 
         for (c in parsed) {
 
-            val cUrl = mainUrl + c?.attr("value")
+            val cUrl = c?.attr("value")!!
             val cName = if (c.text().isEmpty()) {
                 "chapter $c"
             } else {
@@ -182,35 +160,17 @@ class EngNovelProvider : MainAPI() {
         }
 
 
-        val statusHeader0 = document.selectFirst("span.s1.s2")
-        val statusHeader = document.selectFirst("span.s1.s3")
+        val statusdata = document.selectFirst("div.glyphicon.glyphicon-time")?.child(1)?.text()
 
-        val status = if (statusHeader != null) {
-            when (statusHeader.selectFirst("a")?.text()) {
-                "OnGoing" -> STATUS_ONGOING
-                "Completed" -> STATUS_COMPLETE
-                else -> STATUS_NULL
-            }
-
-        } else {
-            when (statusHeader0?.selectFirst("> a")?.text()) {
-                "OnGoing" -> STATUS_ONGOING
-                "Completed" -> STATUS_COMPLETE
-                else -> STATUS_NULL
-            }
+        val status = when (statusdata) {
+            "OnGoing" -> STATUS_ONGOING
+            "Completed" -> STATUS_COMPLETE
+            else -> STATUS_NULL
         }
 
-        var rating = 0
-        var peopleVoted = 0
-        try {
-            rating = (document.selectFirst("div.m-desc > div.score > p:nth-child(2)")?.text()!!
-                .substringBefore("/").toFloat() * 200).toInt()
+        var rating = document.getElementsByAttributeValue("itemprop", "ratingValue").text().toRate()
+        var peopleVoted = document.getElementsByAttributeValue("itemprop", "ratingCount").text().toInt()
 
-            peopleVoted = document.selectFirst("div.m-desc > div.score > p:nth-child(2)")?.text()!!
-                .substringAfter("(").filter { it.isDigit() }.toInt()
-        } catch (e: Exception) {
-            // NO RATING
-        }
 
         return LoadResponse(
             url,
@@ -226,4 +186,5 @@ class EngNovelProvider : MainAPI() {
             status
         )
     }
+
 }
